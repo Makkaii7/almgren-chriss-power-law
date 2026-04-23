@@ -92,13 +92,36 @@ def objective_power_law(x_intermediate, params, beta=0.6):
     """
     # TODO: Implement
     # Steps:
-    #   1. Extract X, N, sigma, gamma, eta from params
-    #   2. Construct full trajectory: [X, x_1, ..., x_{N-1}, 0]
-    #   3. Compute v_k = x_{k-1} - x_k for k = 1, ..., N
-    #   4. Impact cost = eta * sum(|v_k|^(1+beta))  — use np.abs(v_k)
-    #   5. Risk cost = gamma * sigma^2 * sum(x_k^2) for k=1..N (exclude x_0)
-    #   6. Return total = impact_cost + risk_cost
-    pass
+    # 1. Extract parameters
+    X = params["X"]
+    N = params["N"]
+    sigma = params["sigma"]
+    gamma = params["gamma"]
+    eta = params["eta"]
+
+    # Safety check: the optimizer should provide N-1 intermediate points
+    x_intermediate = np.asarray(x_intermediate, dtype=float)
+    if x_intermediate.shape != (N - 1,):
+        raise ValueError(
+            f"x_intermediate must have shape ({N-1},), got {x_intermediate.shape}"
+        )
+
+    # 2. Construct full trajectory: [x_0, x_1, ..., x_{N-1}, x_N]
+    trajectory = np.concatenate(([X], x_intermediate, [0.0]))
+
+    # 3. Compute trades v_k = x_{k-1} - x_k, for k=1,...,N
+    v = trajectory[:-1] - trajectory[1:]
+
+    # 4. Temporary impact cost: eta * sum(|v_k|^(1+beta))
+    impact_cost = eta * np.sum(np.abs(v) ** (1.0 + beta))
+
+    # 5. Risk cost: gamma * sigma^2 * sum(x_k^2), k=1,...,N
+    # Exclude x_0, include x_N=0 (harmless)
+    risk_cost = gamma * (sigma ** 2) * np.sum(trajectory[1:] ** 2)
+
+    # 6. Total cost
+    total_cost = impact_cost + risk_cost
+    return float(total_cost)
 
 
 def optimal_trajectory_power_law(params, beta=0.6):
