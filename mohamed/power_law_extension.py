@@ -343,13 +343,32 @@ def plot_beta_sensitivity(beta_values=None, save_path=None):
         If provided, save the figure to this path.
     """
     # TODO: Implement
-    # For each beta value:
-    #   1. Create params with set_params()
-    #   2. Solve for the optimal trajectory with that beta
-    #   3. Plot on the same chart with a label
-    # Add legend, axis labels, title
-    # Note: This may take a few seconds per beta value (numerical optimization)
-    pass
+    if beta_values is None:
+        beta_values = [0.3, 0.5, 0.6, 0.7, 1.0]
+
+    # 1. Shared parameters
+    params = set_params()
+    N = params["N"]
+    k = np.arange(N + 1)
+
+    plt.figure(figsize=(10, 6))
+
+    # 2. Solve and plot one trajectory for each beta
+    for beta in beta_values:
+        trajectory = optimal_trajectory_power_law(params, beta=beta)
+        plt.plot(k, trajectory, linewidth=2, label=rf"$\beta={beta}$")
+
+    # 3. Formatting
+    plt.xlabel("Trading period")
+    plt.ylabel("Remaining inventory (shares)")
+    plt.title("Power-Law Model — Beta Sensitivity of Optimal Trajectory")
+    plt.grid(True, alpha=0.3)
+    plt.legend(title="Impact exponent")
+
+    if save_path is not None:
+        plt.savefig(save_path, dpi=300, bbox_inches="tight")
+
+    plt.show()
 
 
 # ===================================================================
