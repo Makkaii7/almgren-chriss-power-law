@@ -162,22 +162,55 @@ def optimal_trajectory_power_law(params, beta=0.6):
     """
     # TODO: Implement
     # Steps:
-    #   1. Extract X, N from params
-    #   2. Create initial guess: x_k = X * (1 - k/N) for k = 1, ..., N-1
-    #   3. Set bounds: [(0, X)] * (N-1)
-    #   4. Call scipy.optimize.minimize:
-    #        result = minimize(
-    #            objective_power_law,
-    #            x0=x_init,
-    #            args=(params, beta),
-    #            method='SLSQP',
-    #            bounds=bounds,
-    #            options={'maxiter': 1000, 'ftol': 1e-12}
-    #        )
-    #   5. Check result.success — print warning if optimization failed
-    #   6. Construct full trajectory: [X, result.x, 0]
-    #   7. Return trajectory of shape (N+1,)
-    pass
+    # 1. Extract X, N from params
+    X = params["X"]
+    N = params["N"]
+
+    # Edge case: if N = 1, there are no intermediate variables
+    if N == 1:
+        return np.array([X, 0.0], dtype=float)
+
+    # 2. Initial guess: TWAP / linear interpolation for x_1, ..., x_{N-1}
+    x_init = np.array([X * (1.0 - k / N) for k in range(1, N)], dtype=float)
+
+    # 3. Bounds: 0 <= x_k <= X
+    bounds = [(0.0, X)] * (N - 1)
+
+    # Optional monotonicity constraints:
+    # x_k >= x_{k+1} for k=1,...,N-2
+    # This helps prevent the solver from exploring buybacks / non-monotone paths.
+    constraints = []
+    for i in range(N - 2):
+        constraints.append({
+            "type": "ineq",
+            "fun": lambda x, i=i: x[i] - x[i + 1]
+        })
+
+    # 4. Run the optimizer
+    result = minimize(
+        objective_power_law,
+        x0=x_init,
+        args=(params, beta),
+        method="SLSQP",
+        bounds=bounds,
+        constraints=constraints,
+        options={"maxiter": 1000, "ftol": 1e-12}
+    )
+
+    # 5. Check solver success
+    if not result.success:
+        print(f"Warning: optimization did not fully converge. Message: {result.message}")
+
+    # 6. Construct full trajectory [X, x_1, ..., x_{N-1}, 0]
+    trajectory = np.concatenate(([X], result.x, [0.0]))
+
+    # Small cleanup for numerical noise
+    trajectory = np.clip(trajectory, 0.0, X)
+    trajectory[0] = X
+    trajectory[-1] = 0.0
+
+    # 7. Return shape (N+1,)
+    return trajectory
 
 
 def compute_cost_power_law(trajectory, params, beta=0.6):
