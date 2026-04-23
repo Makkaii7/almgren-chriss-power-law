@@ -301,7 +301,28 @@ def plot_trajectory_power_law(trajectory, params, beta=0.6,
     # y-axis: remaining inventory x_k
     # Label with beta value
     # Add axis labels, title, grid
-    pass
+    trajectory = np.asarray(trajectory, dtype=float)
+    N = params["N"]
+
+    if trajectory.shape != (N + 1,):
+        raise ValueError(
+            f"trajectory must have shape ({N+1},), got {trajectory.shape}"
+        )
+
+    k = np.arange(N + 1)
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(k, trajectory, linewidth=2, label=rf"Power-law trajectory ($\beta={beta}$)")
+    plt.xlabel("Trading period k")
+    plt.ylabel("Remaining inventory $x_k$")
+    plt.title(title)
+    plt.grid(True, alpha=0.3)
+    plt.legend()
+
+    if save_path is not None:
+        plt.savefig(save_path, dpi=300, bbox_inches="tight")
+
+    plt.show()
 
 
 def plot_beta_sensitivity(beta_values=None, save_path=None):
