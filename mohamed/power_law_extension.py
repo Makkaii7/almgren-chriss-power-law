@@ -253,7 +253,24 @@ def compute_cost_power_law(trajectory, params, beta=0.6):
     #   2. Impact = eta * sum(|v_k|^(1+beta))
     #   3. Risk = gamma * sigma^2 * sum(x_k^2) for k=1..N
     #   4. Return total
-    pass
+    trajectory = np.asarray(trajectory, dtype=float)
+
+    X = params["X"]
+    N = params["N"]
+
+    if trajectory.shape != (N + 1,):
+        raise ValueError(
+            f"trajectory must have shape ({N+1},), got {trajectory.shape}"
+        )
+
+    # Optional boundary check
+    if not np.isclose(trajectory[0], X):
+        raise ValueError(f"trajectory[0] must equal X={X}, got {trajectory[0]}")
+    if not np.isclose(trajectory[-1], 0.0):
+        raise ValueError(f"trajectory[-1] must equal 0, got {trajectory[-1]}")
+
+    x_intermediate = trajectory[1:-1]
+    return objective_power_law(x_intermediate, params, beta)
 
 
 # ===================================================================
