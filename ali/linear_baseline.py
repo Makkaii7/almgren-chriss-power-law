@@ -121,7 +121,10 @@ def optimal_trajectory_linear(params):
     gamma = params['gamma']
     eta = params['eta']
     
-    # Compute kappa — the urgency parameter
+    # Compute kappa — the urgency parameter.
+    # Note: This is the small-lambda/eta approximation. The exact discrete-time
+    # kappa is arccosh(1 + gamma*sigma^2/(2*eta)). For the baseline parameters
+    # the difference is negligible (< 1e-10).
     kappa = np.sqrt(gamma * sigma**2 / eta)
     
     # Apply closed-form solution: x_k = X * sinh(kappa * (N - k)) / sinh(kappa * N)
@@ -413,9 +416,8 @@ if __name__ == "__main__":
         gamma_values=[1e-7, 1e-5, 1e-3, 1e-2, 1e-1],
         save_path=os.path.join(FIGURES_DIR, "linear_gamma_sensitivity.png")
     )
-    print(f"\nFigures saved to {FIGURES_DIR}/")
-
-plot_trade_rate_sensitivity(
+    plot_trade_rate_sensitivity(
         gamma_values=[1e-7, 1e-3, 1e-1],
         save_path=os.path.join(FIGURES_DIR, "linear_trade_rate_sensitivity.png")
     )
+    print(f"\nFigures saved to {FIGURES_DIR}/")

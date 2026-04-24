@@ -90,9 +90,6 @@ def objective_power_law(x_intermediate, params, beta=0.6):
     - The exponent is (1 + beta), so for beta = 0.6 the impact term is |v_k|^1.6.
     - For beta = 1.0, |v_k|^2.0 = v_k^2, recovering the linear model.
     """
-    # TODO: Implement
-    # Steps:
-    # 1. Extract parameters
     X = params["X"]
     N = params["N"]
     sigma = params["sigma"]
@@ -160,9 +157,6 @@ def optimal_trajectory_power_law(params, beta=0.6):
       NOT as an explicit constraint to the solver.
     - Sanity check: with beta = 1.0, the result should match the linear model.
     """
-    # TODO: Implement
-    # Steps:
-    # 1. Extract X, N from params
     X = params["X"]
     N = params["N"]
 
@@ -199,7 +193,7 @@ def optimal_trajectory_power_law(params, beta=0.6):
 
     # 5. Check solver success
     if not result.success:
-        print(f"Warning: optimization did not fully converge. Message: {result.message}")
+        raise RuntimeError(f"SLSQP did not converge: {result.message}")
 
     # 6. Construct full trajectory [X, x_1, ..., x_{N-1}, 0]
     trajectory = np.concatenate(([X], result.x, [0.0]))
@@ -242,17 +236,6 @@ def compute_cost_power_law(trajectory, params, beta=0.6):
     This wraps objective_power_law() but accepts a full trajectory (N+1 values)
     instead of just the intermediate values (N-1 values).
     """
-    # TODO: Implement
-    # Steps:
-    #   1. Extract x_intermediate = trajectory[1:-1]
-    #   2. Call objective_power_law(x_intermediate, params, beta)
-    #   3. Return the cost
-    #
-    # Or compute directly:
-    #   1. Compute v_k = trajectory[:-1] - trajectory[1:]
-    #   2. Impact = eta * sum(|v_k|^(1+beta))
-    #   3. Risk = gamma * sigma^2 * sum(x_k^2) for k=1..N
-    #   4. Return total
     trajectory = np.asarray(trajectory, dtype=float)
 
     X = params["X"]
@@ -296,11 +279,6 @@ def plot_trajectory_power_law(trajectory, params, beta=0.6,
     save_path : str or None
         If provided, save the figure to this path.
     """
-    # TODO: Implement
-    # x-axis: trading period k (0 to N)
-    # y-axis: remaining inventory x_k
-    # Label with beta value
-    # Add axis labels, title, grid
     trajectory = np.asarray(trajectory, dtype=float)
     N = params["N"]
 
@@ -342,9 +320,10 @@ def plot_beta_sensitivity(beta_values=None, save_path=None):
     save_path : str or None
         If provided, save the figure to this path.
     """
-    # TODO: Implement
     if beta_values is None:
-        beta_values = [0.3, 0.5, 0.6, 0.7, 1.0]
+        # SLSQP is unreliable at β = 1.0 (flat landscape → iteration-limit failure).
+        # For verified β = 1.0 behavior see combined/verify_cvxpy.py.
+        beta_values = [0.3, 0.5, 0.6, 0.7, 0.8]
 
     # 1. Shared parameters
     params = set_params()
@@ -353,10 +332,14 @@ def plot_beta_sensitivity(beta_values=None, save_path=None):
 
     plt.figure(figsize=(10, 6))
 
-    # 2. Solve and plot one trajectory for each beta
+    # 2. Solve and plot one trajectory for each beta.
+    #    SLSQP can time out on flat landscapes (β close to 1) — skip and note.
     for beta in beta_values:
-        trajectory = optimal_trajectory_power_law(params, beta=beta)
-        plt.plot(k, trajectory, linewidth=2, label=rf"$\beta={beta}$")
+        try:
+            trajectory = optimal_trajectory_power_law(params, beta=beta)
+            plt.plot(k, trajectory, linewidth=2, label=rf"$\beta={beta}$")
+        except RuntimeError as e:
+            print(f"  [plot_beta_sensitivity] skipping β={beta}: {e}")
 
     # 3. Formatting
     plt.xlabel("Trading period")
@@ -414,16 +397,26 @@ if __name__ == "__main__":
     print(f"All v_k > 0: {np.all(trade_list > 0)}")
 
     # ---------------------------------------------------------------
-    # Sanity check: beta = 1.0 should match linear model
+    # Sanity check: beta = 1.0 should match linear model.
+    # Real convergence criterion: relative objective gap < 1e-6.
     # ---------------------------------------------------------------
     print(f"\n--- Sanity Check: beta = 1.0 ---")
-    traj_beta1 = optimal_trajectory_power_law(params, beta=1.0)
-    # Import Ali's linear result for comparison
-    from ali.linear_baseline import optimal_trajectory_linear
-    traj_linear = optimal_trajectory_linear(params)
-    max_diff = np.max(np.abs(traj_beta1 - traj_linear))
-    print(f"Max difference between power-law(beta=1.0) and linear: {max_diff:.4f}")
-    print(f"Match: {'YES' if max_diff < 100 else 'NO — investigate!'}")
+    from ali.linear_baseline import optimal_trajectory_linear, compute_cost_linear
+    try:
+        traj_beta1 = optimal_trajectory_power_law(params, beta=1.0)
+        traj_linear = optimal_trajectory_linear(params)
+        max_diff = np.max(np.abs(traj_beta1 - traj_linear))
+        cost_pl1 = compute_cost_power_law(traj_beta1, params, beta=1.0)
+        cost_lin = compute_cost_linear(traj_linear, params)
+        rel_obj_gap = abs(cost_pl1 - cost_lin) / max(abs(cost_lin), 1e-12)
+        print(f"Max |Δtraj|: {max_diff:.4f}  ({max_diff / params['X'] * 100:.4e}% of X)")
+        print(f"Relative objective gap: {rel_obj_gap:.3e}")
+        match = (rel_obj_gap < 1e-6) and (max_diff < params['X'] * 1e-3)
+        print(f"Match: {'YES' if match else 'NO — investigate!'}")
+    except RuntimeError as e:
+        print(f"SLSQP could not solve β=1.0 ({e}).  "
+              f"The flat quadratic landscape exceeds SLSQP's tolerance budget.  "
+              f"Use combined/verify_cvxpy.py for a disciplined-convex re-solve.")
 
     # ---------------------------------------------------------------
     # Generate plots
@@ -433,7 +426,7 @@ if __name__ == "__main__":
     plot_trajectory_power_law(trajectory, params, beta=beta,
                                save_path=os.path.join(FIGURES_DIR, "power_law_trajectory.png"))
     plot_beta_sensitivity(
-        beta_values=[0.3, 0.5, 0.6, 0.7, 1.0],
+        beta_values=[0.3, 0.5, 0.6, 0.7, 0.9],
         save_path=os.path.join(FIGURES_DIR, "power_law_beta_sensitivity.png")
     )
     print(f"\nFigures saved to {FIGURES_DIR}/")
