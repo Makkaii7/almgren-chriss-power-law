@@ -116,7 +116,7 @@ def on_page(canvas, doc):
         canvas.setFont("Helvetica", 9)
         canvas.setFillColor(GRAY)
         canvas.drawString(0.75 * inch, 0.5 * inch,
-                          "Optimal Execution — Ali & Mohamed — CODS 612")
+                          "Optimal Execution — CODS 612")
         canvas.drawRightString(letter[0] - 0.75 * inch, 0.5 * inch, f"Page {doc.page}")
     canvas.restoreState()
 
@@ -278,8 +278,8 @@ def build_pdf():
     r = RESULTS
     tbl = Table([
         ["Label", "Trajectory", "Cost model", "Cost"],
-        ["(a)", "Linear (Ali)",       "Linear",           f"${r['a_linear_at_linear']:,.0f}"],
-        ["(b)", "Linear (Ali)",       "Power-law β=0.6",  f"${r['b_linear_at_pl']:,.0f}"],
+        ["(a)", "Linear",             "Linear",           f"${r['a_linear_at_linear']:,.0f}"],
+        ["(b)", "Linear",             "Power-law β=0.6",  f"${r['b_linear_at_pl']:,.0f}"],
         ["(c)", "Power-law (CVXPY)",  "Power-law β=0.6",  f"${r['c_pl_at_pl']:,.0f}"],
         ["(d)", "Power-law (CVXPY)",  "Linear",           f"${r['d_pl_at_linear']:,.0f}"],
         ["", "", "Objective gap (b) − (c)",
@@ -644,8 +644,8 @@ def build_docx():
     t.style = "Light Grid Accent 1"
     rows_data = [
         ["Label", "Trajectory", "Cost model", "Cost"],
-        ["(a)", "Linear (Ali)", "Linear", f"${RESULTS['a_linear_at_linear']:,.0f}"],
-        ["(b)", "Linear (Ali)", "Power-law β=0.6", f"${RESULTS['b_linear_at_pl']:,.0f}"],
+        ["(a)", "Linear", "Linear", f"${RESULTS['a_linear_at_linear']:,.0f}"],
+        ["(b)", "Linear", "Power-law β=0.6", f"${RESULTS['b_linear_at_pl']:,.0f}"],
         ["(c)", "Power-law (CVXPY)", "Power-law β=0.6", f"${RESULTS['c_pl_at_pl']:,.0f}"],
         ["(d)", "Power-law (CVXPY)", "Linear", f"${RESULTS['d_pl_at_linear']:,.0f}"],
         ["", "", "Objective gap (b) − (c)",
