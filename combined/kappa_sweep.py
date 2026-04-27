@@ -184,5 +184,73 @@ def main():
     return rows, crossings
 
 
+def generate_two_line_chart():
+    """
+    Reload saved κ-sweep data and emit a side-by-side comparison of the two
+    strategies' total transaction costs (per professor's "different
+    transaction cost outcomes" wording — both costs visible, not just the
+    gap).
+    """
+    npz_path = os.path.join(REPO_ROOT, "combined", "kappa_sweep_results.npz")
+    data = np.load(npz_path)
+    kappas = data["kappas"]
+    linear_at_pl = data["linear_at_pl"]
+    pl_at_pl = data["pl_at_pl"]
+
+    RED = "#d7301f"
+    BLUE = "#2b8cbe"
+
+    fig, ax = plt.subplots(figsize=(12, 6.5))
+
+    # Regime shading — patient / moderate / panicked
+    ax.axvspan(min(kappas) * 0.5, 0.01, color="#e6e6e6", alpha=0.55, zorder=0)
+    ax.axvspan(0.01, 0.5,                 color="#fde7c1", alpha=0.55, zorder=0)
+    ax.axvspan(0.5,  max(kappas) * 2.0,   color="#f6c8c1", alpha=0.55, zorder=0)
+
+    # Two cost lines — same axes, log-scale Y
+    ax.plot(kappas, linear_at_pl, "o-", color=RED, linewidth=2.4,
+            markersize=8, label="Linear strategy cost (under power-law impact)")
+    ax.plot(kappas, pl_at_pl, "s-", color=BLUE, linewidth=2.4,
+            markersize=8, label="Power-law optimal cost")
+
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+    ax.set_xticks(kappas)
+    ax.set_xticklabels([f"{k:g}" for k in kappas])
+    ax.set_xlim(min(kappas) * 0.6, max(kappas) * 1.6)
+
+    ax.set_xlabel(r"Urgency parameter  $\kappa = \sqrt{\gamma\sigma^2/\eta}$",
+                  fontsize=12)
+    ax.set_ylabel("Total transaction cost (dollars, log scale)", fontsize=12)
+    ax.grid(True, which="both", alpha=0.3, zorder=1)
+
+    # Regime labels at the top
+    y_top = ax.get_ylim()[1]
+    ax.text(0.0032, y_top * 0.6, "Patient", ha="center",
+            fontsize=11, color="#404040", fontweight="bold")
+    ax.text(0.07,   y_top * 0.6, "Moderate urgency", ha="center",
+            fontsize=11, color="#9a7b06", fontweight="bold")
+    ax.text(2.2,    y_top * 0.6, "Panicked", ha="center",
+            fontsize=11, color="#a23028", fontweight="bold")
+
+    # Title + subtitle
+    plt.suptitle("Transaction Costs vs Kappa (Urgency Parameter)",
+                 fontsize=15, fontweight="bold", y=0.995)
+    ax.set_title("Linear and power-law strategies compared across the "
+                 "urgency spectrum",
+                 fontsize=11, color="#444", pad=12)
+
+    ax.legend(loc="upper left", framealpha=0.92, fontsize=11)
+
+    fig.tight_layout()
+    out_path = os.path.join(FIGURES_DIR, "cost_vs_kappa_two_line.png")
+    os.makedirs(FIGURES_DIR, exist_ok=True)
+    plt.savefig(out_path, dpi=150, bbox_inches="tight")
+    plt.close(fig)
+    print(f"Figure saved: {out_path}")
+    return out_path
+
+
 if __name__ == "__main__":
     main()
+    generate_two_line_chart()

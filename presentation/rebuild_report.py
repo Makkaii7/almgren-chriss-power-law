@@ -377,6 +377,19 @@ def build_pdf():
                     "Both absolute (red, left axis) and relative (blue dashed, "
                     "right axis) representations are shown. The gap is small "
                     "in the patient regime but grows substantially as κ rises."))
+    s.append(figure(os.path.join(FIG, "cost_vs_kappa_two_line.png"),
+                    "Figure 5. Transaction costs of the linear and power-law "
+                    "strategies plotted across the κ range. The vertical "
+                    "separation between the two lines is the cost gap shown "
+                    "in Figure 4."))
+    s.append(Paragraph(
+        "Figure 5 presents the same κ sweep in absolute cost terms rather "
+        "than relative gap. Both strategies' total transaction costs are "
+        "plotted on a logarithmic axis. The visual divergence makes the "
+        "practical scale of the disagreement clear: at moderate urgency the "
+        "linear strategy can cost orders of magnitude more than the power-law "
+        "optimum. At very high κ, both strategies converge as the optimal "
+        "action becomes near-immediate liquidation under both impact models.", BODY))
     s.append(Paragraph(
         "The chart confirms what we observed in the γ trajectory comparison: "
         "when liquidation is patient, both models produce near-identical "
@@ -702,6 +715,20 @@ def build_docx():
                   "Both absolute (red, left axis) and relative (blue dashed, "
                   "right axis) representations are shown. The gap is small in "
                   "the patient regime but grows substantially as κ rises.")
+    _image(doc, os.path.join(FIG, "cost_vs_kappa_two_line.png"), width_inches=5.8)
+    _caption(doc, "Figure 5. Transaction costs of the linear and power-law "
+                  "strategies plotted across the κ range. The vertical "
+                  "separation between the two lines is the cost gap shown "
+                  "in Figure 4.")
+    _body(doc,
+          "Figure 5 presents the same κ sweep in absolute cost terms rather "
+          "than relative gap. Both strategies' total transaction costs are "
+          "plotted on a logarithmic axis. The visual divergence makes the "
+          "practical scale of the disagreement clear: at moderate urgency "
+          "the linear strategy can cost orders of magnitude more than the "
+          "power-law optimum. At very high κ, both strategies converge as "
+          "the optimal action becomes near-immediate liquidation under both "
+          "impact models.")
     _body(doc,
           "The chart confirms what we observed in the γ trajectory "
           "comparison: when liquidation is patient, both models produce "
