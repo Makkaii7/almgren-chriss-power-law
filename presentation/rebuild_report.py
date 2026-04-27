@@ -357,6 +357,41 @@ def build_pdf():
         "i.e. urgent liquidation in illiquid assets, precisely the regime where "
         "execution quality is most financially consequential.", BODY))
 
+    s.append(Paragraph("4.5  Cost gap as a function of urgency (κ)", H1))
+    s.append(Paragraph(
+        "Following feedback from our project review, we extended the sensitivity "
+        "analysis to study how the cost gap varies with the urgency parameter "
+        "κ. Recall that κ = √(γσ²/η) bundles risk aversion, volatility, and "
+        "impact cost into a single number. A small κ describes a patient "
+        "liquidation; a large κ describes an urgent one.", BODY))
+    s.append(Paragraph(
+        "We swept κ across nine values from 0.001 (very patient) to 5.0 "
+        "(extremely urgent), holding σ and η at baseline and adjusting γ "
+        "accordingly. At each κ we computed both the linear and power-law "
+        "(β = 0.6) optimal trajectories, then evaluated the linear trajectory "
+        "under the power-law cost function. The resulting gap quantifies the "
+        "certainty-equivalent excess cost of using the linear strategy when "
+        "reality follows a power-law impact rule.", BODY))
+    s.append(figure(os.path.join(FIG, "cost_gap_vs_kappa.png"),
+                    "Figure 4. Transaction cost gap as a function of urgency κ. "
+                    "Both absolute (red, left axis) and relative (blue dashed, "
+                    "right axis) representations are shown. The gap is small "
+                    "in the patient regime but grows substantially as κ rises."))
+    s.append(Paragraph(
+        "The chart confirms what we observed in the γ trajectory comparison: "
+        "when liquidation is patient, both models produce near-identical "
+        "costs, but as urgency rises the linear model's misspecification of "
+        "impact becomes increasingly expensive. Combined with the β "
+        "sensitivity in §4.3, this shows two distinct failure modes of the "
+        "linear model: it breaks down when impact is highly non-linear "
+        "(low β) <i>or</i> when liquidation is urgent (high κ). In a real "
+        "execution context, both can occur simultaneously.", BODY))
+    s.append(Paragraph(
+        "We note one technical subtlety: the curve is non-monotone, peaking "
+        "around κ ≈ 0.5–1.0 and shrinking again at κ = 5. At extreme urgency, "
+        "both strategies are forced toward immediate liquidation, so the "
+        "shapes converge and the relative cost gap contracts.", BODY))
+
     # -- §5 Discussion & Limitations --
     s.append(Paragraph("5.  Discussion &amp; Conclusion", H1)); s.append(hr())
     s.append(Paragraph(
@@ -645,6 +680,42 @@ def build_docx():
           "Combining this with the β-sweep, the linear and power-law models "
           "diverge most dramatically at the (γ high, β low) corner — urgent "
           "liquidation in illiquid assets.")
+
+    _hdr(doc, "4.5  Cost gap as a function of urgency (κ)", size=12)
+    _body(doc,
+          "Following feedback from our project review, we extended the "
+          "sensitivity analysis to study how the cost gap varies with the "
+          "urgency parameter κ. Recall that κ = √(γσ²/η) bundles risk "
+          "aversion, volatility, and impact cost into a single number. A "
+          "small κ describes a patient liquidation; a large κ describes an "
+          "urgent one.")
+    _body(doc,
+          "We swept κ across nine values from 0.001 (very patient) to 5.0 "
+          "(extremely urgent), holding σ and η at baseline and adjusting γ "
+          "accordingly. At each κ we computed both the linear and power-law "
+          "(β = 0.6) optimal trajectories, then evaluated the linear "
+          "trajectory under the power-law cost function. The resulting gap "
+          "quantifies the certainty-equivalent excess cost of using the "
+          "linear strategy when reality follows a power-law impact rule.")
+    _image(doc, os.path.join(FIG, "cost_gap_vs_kappa.png"), width_inches=5.8)
+    _caption(doc, "Figure 4. Transaction cost gap as a function of urgency κ. "
+                  "Both absolute (red, left axis) and relative (blue dashed, "
+                  "right axis) representations are shown. The gap is small in "
+                  "the patient regime but grows substantially as κ rises.")
+    _body(doc,
+          "The chart confirms what we observed in the γ trajectory "
+          "comparison: when liquidation is patient, both models produce "
+          "near-identical costs, but as urgency rises the linear model's "
+          "misspecification of impact becomes increasingly expensive. "
+          "Combined with the β sensitivity in §4.3, this shows two distinct "
+          "failure modes of the linear model: it breaks down when impact is "
+          "highly non-linear (low β) OR when liquidation is urgent (high κ). "
+          "In a real execution context, both can occur simultaneously.")
+    _body(doc,
+          "Technical subtlety: the curve is non-monotone, peaking around κ "
+          "≈ 0.5–1.0 and shrinking again at κ = 5. At extreme urgency both "
+          "strategies are forced toward immediate liquidation, so the shapes "
+          "converge and the relative cost gap contracts.")
 
     # §5
     _hdr(doc, "5.  Discussion & Conclusion")
