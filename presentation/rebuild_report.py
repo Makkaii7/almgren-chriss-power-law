@@ -258,7 +258,7 @@ def build_pdf():
     s.append(Paragraph(
         "At baseline γ the linear model produces a near-straight-line trajectory — "
         "κ N ≈ 0.35 is small, so the sinh curve is almost linear and the schedule "
-        "is close to TWAP (~20,000 shares per interval). The power-law CVXPY-verified "
+        "is close to TWAP (~20,000 shares per interval). The power-law "
         "trajectory at β = 0.6 is meaningfully more front-loaded than SLSQP had "
         "estimated: v<sub>1</sub> ≈ 28,588 shares vs. SLSQP's 21,909. Both solutions "
         "fully liquidate and satisfy v<sub>k</sub> &gt; 0 for all k.", BODY))
@@ -280,8 +280,8 @@ def build_pdf():
         ["Label", "Trajectory", "Cost model", "Cost"],
         ["(a)", "Linear",             "Linear",           f"${r['a_linear_at_linear']:,.0f}"],
         ["(b)", "Linear",             "Power-law β=0.6",  f"${r['b_linear_at_pl']:,.0f}"],
-        ["(c)", "Power-law (CVXPY)",  "Power-law β=0.6",  f"${r['c_pl_at_pl']:,.0f}"],
-        ["(d)", "Power-law (CVXPY)",  "Linear",           f"${r['d_pl_at_linear']:,.0f}"],
+        ["(c)", "Power-law",  "Power-law β=0.6",  f"${r['c_pl_at_pl']:,.0f}"],
+        ["(d)", "Power-law",  "Linear",           f"${r['d_pl_at_linear']:,.0f}"],
         ["", "", "Objective gap (b) − (c)",
          f"${r['gap_abs']:,.0f}   ({r['gap_pct']:.2f} %)"],
     ], colWidths=[0.6 * inch, 1.9 * inch, 2.0 * inch, 1.8 * inch])
@@ -318,7 +318,7 @@ def build_pdf():
                     "Figure 2. Certainty-equivalent objective gap (excess objective "
                     "under the power-law model) of the linear trajectory, as a "
                     "function of the true impact exponent β. The gap grows super-"
-                    "linearly as β decreases. CVXPY-verified."))
+                    "linearly as β decreases."))
 
     # Sweep table
     sweep_rows = [["β", "gap (abs)", "gap (%)"]]
@@ -628,7 +628,7 @@ def build_docx():
           "At baseline γ the linear model produces a near-straight-line "
           "trajectory — κN ≈ 0.35 is small, so the sinh curve is almost "
           "linear and the schedule is close to TWAP (~20,000 shares per "
-          "interval). The CVXPY-verified power-law trajectory at β = 0.6 is "
+          "interval). The power-law trajectory at β = 0.6 is "
           "meaningfully more front-loaded than SLSQP had estimated: v_1 ≈ "
           "28,588 shares vs. SLSQP's 21,909.")
     _image(doc, os.path.join(FIG, "trajectory_comparison.png"), width_inches=5.6)
@@ -646,8 +646,8 @@ def build_docx():
         ["Label", "Trajectory", "Cost model", "Cost"],
         ["(a)", "Linear", "Linear", f"${RESULTS['a_linear_at_linear']:,.0f}"],
         ["(b)", "Linear", "Power-law β=0.6", f"${RESULTS['b_linear_at_pl']:,.0f}"],
-        ["(c)", "Power-law (CVXPY)", "Power-law β=0.6", f"${RESULTS['c_pl_at_pl']:,.0f}"],
-        ["(d)", "Power-law (CVXPY)", "Linear", f"${RESULTS['d_pl_at_linear']:,.0f}"],
+        ["(c)", "Power-law", "Power-law β=0.6", f"${RESULTS['c_pl_at_pl']:,.0f}"],
+        ["(d)", "Power-law", "Linear", f"${RESULTS['d_pl_at_linear']:,.0f}"],
         ["", "", "Objective gap (b) − (c)",
          f"${RESULTS['gap_abs']:,.0f}   ({RESULTS['gap_pct']:.2f} %)"],
     ]
@@ -669,7 +669,7 @@ def build_docx():
     _image(doc, os.path.join(FIG, "cost_gap_vs_beta.png"), width_inches=5.6)
     _caption(doc, "Figure 2. Certainty-equivalent objective gap of the linear "
                   "trajectory under the true power-law model, as a function "
-                  "of β. CVXPY-verified.")
+                  "of β.")
     sweep_table = doc.add_table(rows=1 + len(RESULTS["beta_sweep"]), cols=3)
     sweep_table.style = "Light Grid Accent 1"
     sweep_table.cell(0, 0).text = "β"
